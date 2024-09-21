@@ -115,7 +115,6 @@ templates_parent_dir  = /writefreely
 static_parent_dir     = /writefreely
 pages_parent_dir      = /writefreely
 media_parent_dir      = /data/media
-media_provider_url    = ${WRITEFREELY_MEDIAPATH:-http://localhost:8080/mediapath}
 keys_parent_dir       =
 hash_seed             =
 gopher_port           = 0
@@ -162,6 +161,7 @@ disable_password_auth = false
 allow_upload_media    = true
 media_max_size        = 200
 total_media_size      = 1025
+media_provider_url    = ${WRITEFREELY_MEDIAPATH:-http://localhost:8080/mediapath}
 
 [email]
 domain          =
