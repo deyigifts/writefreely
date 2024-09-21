@@ -294,7 +294,7 @@
 				body: formData,
 				}).then(response => response.json())
 					.then(data => {
-						alert('File uploaded successfully, path: /' + data.path);
+						alert("Success! \n" + data.url);
 						location.reload();
 					}).catch(error => {
 						alert('An error occurred during file upload.');

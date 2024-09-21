@@ -115,6 +115,7 @@ templates_parent_dir  = /writefreely
 static_parent_dir     = /writefreely
 pages_parent_dir      = /writefreely
 media_parent_dir      = /data/media
+media_provider_url    = ${WRITEFREELY_MEDIAPATH:-http://localhost:8080/mediapath}
 keys_parent_dir       =
 hash_seed             =
 gopher_port           = 0
