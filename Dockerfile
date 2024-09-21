@@ -1,50 +1,64 @@
-# Build image
-# SHA256 of golang:1.21-alpine3.18 linux/amd64
-FROM golang@sha256:f475434ea2047a83e9ba02a1da8efc250fa6b2ed0e9e8e4eb8c5322ea6997795 as build
+# Modify from https://github.com/jrasanen/writefreely-docker
+# Maintainer deyigifts.com
 
-LABEL org.opencontainers.image.source="https://github.com/writefreely/writefreely"
+ARG GOLANG_VERSION=1.22
+ARG ALPINE_VERSION=3.19
+
+# Build image
+FROM golang:${GOLANG_VERSION}-alpine as build
+
+ENV WRITEFREELY_BRANCH=main
+ENV WRITEFREELY_FORK=deyigifts/writefreely
+LABEL org.opencontainers.image.source="https://github.com/deyigifts/writefreely"
 LABEL org.opencontainers.image.description="WriteFreely is a clean, minimalist publishing platform made for writers. Start a blog, share knowledge within your organization, or build a community around the shared act of writing."
 
-RUN apk -U upgrade \
-    && apk add --no-cache nodejs npm make g++ git \
-    && npm install -g less less-plugin-clean-css \
-    && mkdir -p /go/src/github.com/writefreely/writefreely
+RUN sed -i 's#https\?://dl-cdn.alpinelinux.org/alpine#https://mirrors.tuna.tsinghua.edu.cn/alpine#g' /etc/apk/repositories
 
-WORKDIR /go/src/github.com/writefreely/writefreely
+RUN apk -U upgrade \
+    && apk add --no-cache nodejs npm make g++ sqlite-dev \
+    && npm config set registry https://mirrors.huaweicloud.com/repository/npm/ \
+    && npm install -g less less-plugin-clean-css \
+    && mkdir -p /go/src/github.com/${WRITEFREELY_FORK}
+
+
+WORKDIR /go/src/github.com/${WRITEFREELY_FORK}
 
 COPY . .
-
 RUN cat ossl_legacy.cnf > /etc/ssl/openssl.cnf
 
 ENV GO111MODULE=on
 ENV NODE_OPTIONS=--openssl-legacy-provider
 
-RUN make build \
-    && make ui \
-    && mkdir /stage \
-    && cp -R /go/bin \
-      /go/src/github.com/writefreely/writefreely/templates \
-      /go/src/github.com/writefreely/writefreely/static \
-      /go/src/github.com/writefreely/writefreely/pages \
-      /go/src/github.com/writefreely/writefreely/keys \
-      /go/src/github.com/writefreely/writefreely/cmd \
-      /stage
+RUN go env -w GOPROXY=https://goproxy.cn,direct
+
+RUN make build && \
+    make ui && \
+    mkdir /stage && \
+    cp -R /go/bin \
+    /go/src/github.com/${WRITEFREELY_FORK}/templates \
+    /go/src/github.com/${WRITEFREELY_FORK}/static \
+    /go/src/github.com/${WRITEFREELY_FORK}/pages \
+    /go/src/github.com/${WRITEFREELY_FORK}/keys \
+    /go/src/github.com/${WRITEFREELY_FORK}/cmd \
+    /go/src/github.com/${WRITEFREELY_FORK}/scripts \
+    /stage
 
 # Final image
-# SHA256 of alpine:3.18.4 linux/amd64
-FROM alpine@sha256:48d9183eb12a05c99bcc0bf44a003607b8e941e1d4f41f9ad12bdcc4b5672f86
+FROM alpine:${ALPINE_VERSION}
 
-RUN apk -U upgrade \
-    && apk add --no-cache openssl ca-certificates
+ENV USER_ID=1000
+ENV GROUP_ID=1000
 
-COPY --from=build --chown=daemon:daemon /stage /go
+RUN addgroup -g ${GROUP_ID} -S wf && \
+  adduser -u ${USER_ID} -S -G wf wf
 
-WORKDIR /go
-VOLUME /go/keys
+COPY --from=build --chown=wf:wf /stage /writefreely
+
+WORKDIR /writefreely
+VOLUME /data
+USER wf
 EXPOSE 8080
-USER daemon
 
-ENTRYPOINT ["cmd/writefreely/writefreely"]
-
-HEALTHCHECK --start-period=5s --interval=15s --timeout=5s \
-    CMD curl -fSs http://localhost:8080/ || exit 1
+ENTRYPOINT ["/writefreely/scripts/entrypoint.sh"]
+HEALTHCHECK --start-period=60s --interval=120s --timeout=15s \
+  CMD curl -fSs http://localhost:8080/ || exit 1
