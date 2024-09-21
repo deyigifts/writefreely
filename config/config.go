@@ -173,6 +173,7 @@ type (
 		AllowUploadMedia bool   `ini:"allow_upload_media"`
 		MediaMaxSize     int64  `ini:"media_max_size"`
 		TotalMediaSpace  int64  `ini:"total_media_size"`
+                MediaProviderURL string `ini:"media_provider_url"`
 	}
 
 	EmailCfg struct {
@@ -213,6 +214,7 @@ func New() *Config {
 			Federation:     true,
 			PublicStats:    true,
 			AllowUploadMedia: false,
+                        MediaProviderURL: "http://localhost:8080/mediapath",
 		},
 	}
 	c.UseMySQL(true)

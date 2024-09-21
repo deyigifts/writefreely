@@ -161,6 +161,7 @@ disable_password_auth = false
 allow_upload_media    = true
 media_max_size        = 200
 total_media_size      = 1025
+media_provider_url    = ${WRITEFREELY_MEDIAPATH:-http://localhost:8080/mediapath}
 
 [email]
 domain          =
