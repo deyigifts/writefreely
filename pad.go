@@ -418,6 +418,7 @@ func handleUploadMedia(app *App, w http.ResponseWriter, r *http.Request) error {
 
 	newFileName, _ := getNewFileName(mediaDirectoryPath, handler.Filename)
 	newFilePath := filepath.Join(mediaDirectoryPath, newFileName)
+	mediaURL := filepath.Join(app.cfg.App.MediaProviderURL, user.Username, slug, newFileName)
 	dst, err := os.Create(newFilePath)
 	if err != nil {
 		http.Error(w, "Error saving the file", http.StatusInternalServerError)
@@ -432,6 +433,7 @@ func handleUploadMedia(app *App, w http.ResponseWriter, r *http.Request) error {
 	response := map[string]string{
 		"message": "File uploaded successfully!",
 		"path": newFilePath,
+		"url": mediaURL,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
