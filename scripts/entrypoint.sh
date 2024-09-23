@@ -20,11 +20,6 @@ set -e
 
 cd /data
 
-# Create Media directory
-if [ ! -d /data/media ]; then
-  mkdir /data/media
-fi
-
 WRITEFREELY=/writefreely/cmd/writefreely/writefreely
 configfile=/data/config.ini
 attempts=0
@@ -114,7 +109,7 @@ autocert              = false
 templates_parent_dir  = /writefreely
 static_parent_dir     = /writefreely
 pages_parent_dir      = /writefreely
-media_parent_dir      = /data/media
+media_parent_dir      = /data
 keys_parent_dir       =
 hash_seed             =
 gopher_port           = 0
