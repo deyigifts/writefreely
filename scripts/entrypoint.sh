@@ -88,7 +88,7 @@ create_writer_user() {
 if [ -e $configfile ] && [ -e ./keys/email.aes256 ]; then
   log "Migration required. Running migration..."
   ${WRITEFREELY} db migrate
-  exec ${WRITEFREELY}
+  exec ${WRITEFREELY} $@
 fi
 
 if [ ! -e $configfile ]; then
@@ -156,7 +156,7 @@ disable_password_auth = false
 allow_upload_media    = true
 media_max_size        = 200
 total_media_size      = 1025
-media_provider_url    = ${WRITEFREELY_MEDIAPATH:-http://localhost:8080/mediapath}
+media_provider_url    = ${WRITEFREELY_MEDIAPATH:-${WRITEFREELY_HOST}/media}
 
 [email]
 domain          =
@@ -221,4 +221,4 @@ generate_keys
 create_admin_user
 create_writer_user
 
-exec ${WRITEFREELY}
+exec ${WRITEFREELY} $@

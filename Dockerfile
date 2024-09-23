@@ -15,7 +15,7 @@ LABEL org.opencontainers.image.description="WriteFreely is a clean, minimalist p
 RUN sed -i 's#https\?://dl-cdn.alpinelinux.org/alpine#https://mirrors.tuna.tsinghua.edu.cn/alpine#g' /etc/apk/repositories
 
 RUN apk -U upgrade \
-    && apk add --no-cache nodejs npm make g++ sqlite-dev \
+    && apk add --no-cache nodejs npm make g++ sqlite-dev curl \
     && npm config set registry https://mirrors.huaweicloud.com/repository/npm/ \
     && npm install -g less less-plugin-clean-css \
     && mkdir -p /go/src/github.com/${WRITEFREELY_FORK}
@@ -30,6 +30,8 @@ ENV GO111MODULE=on
 ENV NODE_OPTIONS=--openssl-legacy-provider
 
 RUN go env -w GOPROXY=https://goproxy.cn,direct
+
+RUN make deps
 
 RUN make build && \
     make ui && \
@@ -61,4 +63,4 @@ EXPOSE 8080
 
 ENTRYPOINT ["/writefreely/scripts/entrypoint.sh"]
 HEALTHCHECK --start-period=60s --interval=120s --timeout=15s \
-  CMD curl -fSs http://localhost:8080/ || exit 1
+  CMD curl -fSs http://127.0.0.1:8080/ || exit 1
