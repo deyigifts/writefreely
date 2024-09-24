@@ -214,7 +214,7 @@ func New() *Config {
 			Federation:     true,
 			PublicStats:    true,
 			AllowUploadMedia: false,
-                        MediaProviderURL: "http://localhost:8080/mediapath",
+                        MediaProviderURL: "http://localhost:8080/media",
 		},
 	}
 	c.UseMySQL(true)

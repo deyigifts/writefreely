@@ -324,7 +324,7 @@ func handleGetFile(app *App, w http.ResponseWriter, r *http.Request) error {
 	mediaDirectoryPath := filepath.Join(app.cfg.Server.MediaParentDir, mediaDir,
 							                                   author, slug, filename)
 	filePath := mediaDirectoryPath 
-	file, err := http.Dir("").Open(filePath)
+	file, err := http.Dir("/").Open(filePath)
 	if err != nil {
 		http.Error(w, "File not found", http.StatusNotFound)
 		return nil

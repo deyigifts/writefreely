@@ -326,10 +326,14 @@
 			const valueListElement = document.getElementById("mediaFilesList");
 			{{.Post.MediaFilesList}}.forEach((value) => {
 				const listItemElement = document.createElement("li");
-				listItemElement.textContent = value;
+                                // media in path is MAGIC, media got 5
+                                const mediaPathIndex = value.indexOf("media");
+                                const mediaPath = value.substr(mediaPathIndex + 5);
+				listItemElement.textContent = "![{{ .Post.Slug }}]({{ .MediaProviderURL }}" + mediaPath + ")";
 				valueListElement.appendChild(listItemElement);
 				const buttonElement = document.createElement("button");
 				buttonElement.textContent = "Remove";
+				buttonElement.style['float'] = 'right';
 				buttonElement.addEventListener("click", () => {
 					const confirmResult = confirm("Are you sure to remove: " + value + "?");
 					if (confirmResult) {
