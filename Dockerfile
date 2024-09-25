@@ -34,6 +34,8 @@ RUN if [[ "${BUILD_REGION}" == "CN" ]] ; then \
 
 RUN make deps
 
+RUN make deps
+
 RUN make build && \
     make ui && \
     mkdir /stage && \

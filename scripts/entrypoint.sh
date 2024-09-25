@@ -20,11 +20,6 @@ set -e
 
 cd /data
 
-# Create Media directory
-if [ ! -d /data/media ]; then
-  mkdir /data/media
-fi
-
 WRITEFREELY=/writefreely/cmd/writefreely/writefreely
 configfile=/data/config.ini
 attempts=0
@@ -93,7 +88,7 @@ create_writer_user() {
 if [ -e $configfile ] && [ -e ./keys/email.aes256 ]; then
   log "Migration required. Running migration..."
   ${WRITEFREELY} db migrate
-  exec ${WRITEFREELY}
+  exec ${WRITEFREELY} $@
 fi
 
 if [ ! -e $configfile ]; then
@@ -114,7 +109,7 @@ autocert              = false
 templates_parent_dir  = /writefreely
 static_parent_dir     = /writefreely
 pages_parent_dir      = /writefreely
-media_parent_dir      = /data/media
+media_parent_dir      = /data
 keys_parent_dir       =
 hash_seed             =
 gopher_port           = 0
@@ -161,6 +156,7 @@ disable_password_auth = false
 allow_upload_media    = true
 media_max_size        = 200
 total_media_size      = 1025
+media_provider_url    = ${WRITEFREELY_MEDIAPATH:-${WRITEFREELY_HOST}/media}
 
 [email]
 domain          =
@@ -225,4 +221,4 @@ generate_keys
 create_admin_user
 create_writer_user
 
-exec ${WRITEFREELY}
+exec ${WRITEFREELY} $@
