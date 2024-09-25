@@ -7,16 +7,16 @@ ARG ALPINE_VERSION=3.19
 # Build image
 FROM golang:${GOLANG_VERSION}-alpine AS build
 
-ENV WRITEFREELY_BRANCH=main
-ENV WRITEFREELY_FORK=deyigifts/writefreely
-LABEL org.opencontainers.image.source="https://github.com/deyigifts/writefreely"
-LABEL org.opencontainers.image.description="WriteFreely is a clean, minimalist publishing platform made for writers. Start a blog, share knowledge within your organization, or build a community around the shared act of writing."
+ARG WRITEFREELY_FORK=deyigifts/writefreely
+ARG BUILD_REGION
 
-RUN sed -i 's#https\?://dl-cdn.alpinelinux.org/alpine#https://mirrors.tuna.tsinghua.edu.cn/alpine#g' /etc/apk/repositories
+RUN if [[ "${BUILD_REGION}" == "CN" ]] ; then sed -i \
+  's#https\?://dl-cdn.alpinelinux.org/alpine#https://mirrors.tuna.tsinghua.edu.cn/alpine#g' /etc/apk/repositories; fi
 
 RUN apk -U upgrade \
     && apk add --no-cache nodejs npm make g++ sqlite-dev \
-    && npm config set registry https://mirrors.huaweicloud.com/repository/npm/ \
+    &&  if [[ "${BUILD_REGION}" == "CN" ]] ; then \
+        npm config set registry https://mirrors.huaweicloud.com/repository/npm/; fi \
     && npm install -g less less-plugin-clean-css \
     && mkdir -p /go/src/github.com/${WRITEFREELY_FORK}
 
@@ -29,7 +29,8 @@ RUN cat ossl_legacy.cnf > /etc/ssl/openssl.cnf
 ENV GO111MODULE=on
 ENV NODE_OPTIONS=--openssl-legacy-provider
 
-RUN go env -w GOPROXY=https://goproxy.cn,direct
+RUN if [[ "${BUILD_REGION}" == "CN" ]] ; then \
+  go env -w GOPROXY=https://goproxy.cn,direct; fi
 
 RUN make deps
 
@@ -48,11 +49,19 @@ RUN make build && \
 # Final image
 FROM alpine:${ALPINE_VERSION}
 
+ARG WRITEFREELY_FORK=deyigifts/writefreely
+ARG BUILD_REGION
 ENV USER_ID=1000
 ENV GROUP_ID=1000
 
+LABEL org.opencontainers.image.source="https://github.com/${WRITEFREELY_FORK}"
+LABEL org.opencontainers.image.description="WriteFreely is a clean, minimalist publishing platform made for writers. deyigifts.com maintains a user media upload fork under same license."
+
 RUN addgroup -g ${GROUP_ID} -S wf && \
   adduser -u ${USER_ID} -S -G wf wf
+
+RUN if [[ "${BUILD_REGION}" == "CN" ]] ; then sed -i \
+  's#https\?://dl-cdn.alpinelinux.org/alpine#https://mirrors.tuna.tsinghua.edu.cn/alpine#g' /etc/apk/repositories; fi
 
 RUN apk -U upgrade \
     && apk add --no-cache curl
