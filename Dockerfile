@@ -5,7 +5,7 @@ ARG GOLANG_VERSION=1.22
 ARG ALPINE_VERSION=3.19
 
 # Build image
-FROM golang:${GOLANG_VERSION}-alpine as build
+FROM golang:${GOLANG_VERSION}-alpine AS build
 
 ENV WRITEFREELY_BRANCH=main
 ENV WRITEFREELY_FORK=deyigifts/writefreely
@@ -31,6 +31,8 @@ ENV NODE_OPTIONS=--openssl-legacy-provider
 
 RUN go env -w GOPROXY=https://goproxy.cn,direct
 
+RUN make deps
+
 RUN make build && \
     make ui && \
     mkdir /stage && \
@@ -52,6 +54,9 @@ ENV GROUP_ID=1000
 RUN addgroup -g ${GROUP_ID} -S wf && \
   adduser -u ${USER_ID} -S -G wf wf
 
+RUN apk -U upgrade \
+    && apk add --no-cache curl
+
 COPY --from=build --chown=wf:wf /stage /writefreely
 
 WORKDIR /writefreely
@@ -61,4 +66,4 @@ EXPOSE 8080
 
 ENTRYPOINT ["/writefreely/scripts/entrypoint.sh"]
 HEALTHCHECK --start-period=60s --interval=120s --timeout=15s \
-  CMD curl -fSs http://localhost:8080/ || exit 1
+  CMD curl -fSs http://127.0.0.1:8080/ || exit 1
